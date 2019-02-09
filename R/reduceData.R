@@ -1,21 +1,26 @@
-reduceData <- function(data, keyColumnNames) {
-  library(lubridate)
+#' Reduces a data table
+#' @param data the data table
+#' @param keyColumnNames the column names which are the key to the table (i.e. a unique identifier of an element of the table)
+#' @param stringWhichReplacesData
+
+reduceData <- function(data, keyColumnNames, stringWhichReplacesData = '') {
+  library(dplyr)
+
   colnamesOfData <- colnames(data)
   valueColumnNames <- setdiff(colnamesOfData, keyColumnNames)
-  stringWhichReplacesData <- ''
   lapply(1:(length(keyColumnNames) - 1), function(cardinalityOfSubsetOfKeyColumnNames) {
     subsettedKeyColumnNames <-
       combn(x = keyColumnNames, m = cardinalityOfSubsetOfKeyColumnNames)
-    apply(subsettedKeyColumnNames, 2, function(x) {
-      keyColumnNamesToTestReducability <- setdiff(keyColumnNames, x)
-      groupVector <- c(x, valueColumnNames)
+    apply(subsettedKeyColumnNames, 2, function(subsettedKeyColumnName) {
+      keyColumnNamesToTestReducability <- setdiff(keyColumnNames, subsettedKeyColumnName)
+      groupVector <- c(subsettedKeyColumnName, valueColumnNames)
       data <<-
         data %>% inner_join(data %>% group_by(!!!syms(groupVector)) %>% summarise(cardinalityOfGroupVector =
                                                                                     n()),
-                            by = groupVector) %>% inner_join(data %>% group_by(!!!syms(x)) %>% summarise(cardinalityOfKeyGroups = n()),
-                                                             by = x)
-      if (all(rowSums((data %>% select(x)) == stringWhichReplacesData) !=
-          length(x))) {
+                            by = groupVector) %>% inner_join(data %>% group_by(!!!syms(subsettedKeyColumnName)) %>% summarise(cardinalityOfKeyGroups = n()),
+                                                             by = subsettedKeyColumnName)
+      if (all(rowSums((data %>% select(subsettedKeyColumnName)) == stringWhichReplacesData) !=
+          length(subsettedKeyColumnName))) {
         lapply(keyColumnNamesToTestReducability, function(keyColumnNameToTestReducability) {
           data <<-
             data %>% mutate(
