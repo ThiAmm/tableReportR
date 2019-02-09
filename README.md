@@ -28,7 +28,6 @@ reduceData(treatments,keyColumnNames = c("country","gender","eye.color"),stringW
 one gets the following table, which stil contains all the informations the table was meant to highlight:
 
 ```
-reduceData(treatments)
 # A tibble: 5 x 4
   country gender eye.color effectOfTreatment
   <chr>   <chr>  <chr>     <chr>            
